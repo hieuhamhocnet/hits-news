@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HITs News - Trang tổng Hợp thông tin</title>
+    
+    <!-- (MỚI) CÁC THẺ META QUAN TRỌNG CHO SEO -->
+    <!-- Thay đổi "description" để mô tả trang của bạn. Đây là dòng Google sẽ hiển thị khi tìm kiếm -->
+    <meta name="description" content="Trang tổng hợp tin tức nóng hổi, cập nhật giá vàng, kết quả xổ số, lịch bóng đá và các tin tức tiện ích nhanh nhất.">
+    <!-- Thêm các từ khóa chính mà bạn muốn người ta tìm -->
+    <meta name="keywords" content="tin tức, tin nóng, giá vàng, xổ số, bóng đá, thời tiết, tin tức tổng hợp">
+    
+    <!-- (GIỮ NGUYÊN) Giữ nguyên file CSS của bạn -->
+    <link rel="stylesheet" href="./css/style.css">
+    
+    <!-- (HẾT PHẦN SEO) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto max-w-6xl p-4 md:p-8">
+        <!-- Header (GIỮ NGUYÊN) Giữ nguyên logo và header của bạn -->
+        <header class="mb-10 flex flex-col items-center">
+            <img src="./images/logo.png" alt="Logo Trang Tin Tức" class="mb-4 rounded-lg">
+            
+            <h1 class="text-5xl font-extrabold text-gray-900">HITs News</h1>
+            <p class="text-xl text-gray-500 mt-2">Cập nhật tin tức nhanh nhất từ trang của tôi</p>
+        </header>
+
+        <!-- Vùng Tin Nổi Bật (Featured) -->
+        <section id="featured-post-container" class="mb-10"></section>
+
+        <!-- Layout chính (Grid) (GIỮ NGUYÊN) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- Cột trái: Tin tức mới nhất -->
+            <main class="md:col-span-2 space-y-6">
+                <h2 id="news-list-title" class="text-3xl font-bold text-gray-800 border-b pb-2">Tin Mới Nhất</h2>
+                <div id="regular-news-container" class="space-y-6">
+                    <!-- Tin tức thường sẽ được chèn vào đây -->
+                </div>
+            </main>
+
+            <!-- Cột phải: Sidebar (GIỮ NGUYÊN) -->
+            <aside class="md:col-span-1 space-y-6 sticky top-8">
+                <!-- Khu vực Tin Hot -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Chủ Đề Hot</h3>
+                    <ul id="hot-topics-list" class="space-y-3">
+                        <!-- Các chủ đề hot sẽ được chèn vào đây -->
+                    </ul>
+                </div>
+                
+                <!-- Khu vực Danh Mục -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Danh Mục</h3>
+                    <ul id="category-list" class="space-y-2">
+                        <!-- Danh mục sẽ được tự động chèn vào đây -->
+                    </ul>
+                </div>
+
+                <!-- Vùng quảng cáo -->
+                <div id="ads-area" class="text-center p-4 bg-gray-200 rounded-lg">
+                    <span class="text-gray-500 italic">(Khu vực quảng cáo)</span>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Loading Indicator (sẽ bị ẩn đi) -->
+        <div id="loading" class="text-center text-gray-500 py-10">
+            <p>Đang tải tin tức...</p>
+        </div>
+
+    </div>
+
+    <!-- (ĐÃ XÓA) <script src="news_data.js"></script> đã bị xóa -->
+
+    <!-- (CẬP NHẬT) TOÀN BỘ PHẦN JAVASCRIPT ĐÃ ĐƯỢC CHUYỂN SANG DÙNG GOOGLE SHEETS -->
+    <script>
+        // --- (PHẦN QUAN TRỌNG NHẤT) ---
+        // BẠN PHẢI DÁN LINK GOOGLE SHEET (đã xuất bản dạng .csv) VÀO ĐÂY
+        // Hãy đọc kỹ file "github-pages-huong-dan.md"
+        const GOOGLE_SHEET_URL = 'DÁN_LINK_GOOGLE_SHEET_CSV_CỦA_BẠN_VÀO_ĐÂY';
+        
+        // --- (GIỮ NGUYÊN) Các biến và hàm render ---
+        let ALL_NEWS = [];
+        const featuredContainer = document.getElementById('featured-post-container');
+        const regularContainer = document.getElementById('regular-news-container');
+        const hotListContainer = document.getElementById('hot-topics-list');
+        const categoryListContainer = document.getElementById('category-list');
+        const newsListTitle = document.getElementById('news-list-title');
+
+        function renderPost(post, container, type = 'regular') {
+            const article = document.createElement('article');
+            article.className = 'relative bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl';
+            const padding = (type === 'featured') ? 'p-8' : 'p-6';
+            const titleSize = (type === 'featured') ? 'text-4xl' : 'text-2xl';
+            const descSize = (type === "featured") ? 'text-lg' : 'text-base';
+            const tagHtml = post.category ? `
+                <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg shadow-sm z-10">
+                    ${post.category}
+                </div>
+            ` : '';
+            article.innerHTML = `
+                ${tagHtml}
+                <div class="${padding} relative">
+                    <h2 class="${titleSize} font-bold text-gray-800 hover:text-blue-600 mb-3">
+                        <a href="${post.link}" target="_blank" rel="noopener noreferrer">${post.title}</a>
+                    </h2>
+                    <p class="text-gray-600 mb-4 ${descSize}">${post.description || 'Nhấn để xem chi tiết...'}</p>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-sm text-gray-500">${(type === 'featured') ? 'BÀI VIẾT NỔI BẬT' : ''}</span>
+                        <a href="${post.link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-semibold">
+                            Đọc thêm &rarr;
+                        </a>
+                    </div>
+                </div>
+            `;
+            container.appendChild(article);
+        }
+
+        function renderHotTopic(post, container) {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <a href="${post.link}" target="_blank" rel="noopener noreferrer" class="group">
+                    <span class="text-gray-700 group-hover:text-blue-600 font-medium">${post.title}</span>
+                    ${post.category ? `<span class="ml-2 text-xs text-indigo-500 bg-indigo-100 px-2 py-0.5 rounded-full">${post.category}</span>` : ''}
+                </a>
+            `;
+            container.appendChild(li);
+        }
+        
+        function displayNews(newsList) {
+            featuredContainer.innerHTML = '';
+            regularContainer.innerHTML = '';
+            hotListContainer.innerHTML = '';
+            let featuredPostRendered = false;
+
+            newsList.forEach(postData => {
+                if (!postData.title || !postData.link) return; 
+                if (postData.isFeatured && !featuredPostRendered) {
+                    renderPost(postData, featuredContainer, 'featured');
+                    featuredPostRendered = true;
+                }
+                if (postData.isHot) {
+                    renderHotTopic(postData, hotListContainer);
+                }
+                if (!postData.isFeatured) {
+                    renderPost(postData, regularContainer, 'regular');
+                }
+            });
+            if (hotListContainer.children.length === 0) {
+                hotListContainer.innerHTML = '<li class="text-gray-500 italic">Không có chủ đề hot nào.</li>';
+            }
+        }
+        
+        function renderCategories(categories) {
+            categoryListContainer.innerHTML = `
+                <li>
+                    <a href="#" class="category-link active block px-3 py-2 rounded-md hover:bg-gray-100" data-category="all">
+                        Tất cả danh mục
+                    </a>
+                </li>
+            `;
+            categories.forEach(category => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <a href="#" class="category-link block px-3 py-2 rounded-md hover:bg-gray-100" data-category="${category}">
+                        ${category}
+                    </a>
+                `;
+                categoryListContainer.appendChild(li);
+            });
+            document.querySelectorAll('.category-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const selectedCategory = e.target.dataset.category;
+                    document.querySelectorAll('.category-link').forEach(l => l.classList.remove('active'));
+                    e.target.classList.add('active');
+                    filterNews(selectedCategory);
+                });
+            });
+        }
+        
+        function filterNews(category) {
+            let filteredNews = [];
+            if (category === 'all') {
+                filteredNews = ALL_NEWS;
+                newsListTitle.innerText = 'Tin Mới Nhất';
+            } else {
+                filteredNews = ALL_NEWS.filter(post => post.category === category);
+                newsListTitle.innerText = `Tin tức: ${category}`;
+            }
+            displayNews(filteredNews);
+        }
+
+        // --- (MỚI) HÀM XỬ LÝ CSV (Cần thiết cho Google Sheet) ---
+        // Hàm này xử lý một hàng CSV, kể cả khi có dấu phẩy trong mô tả (miễn là nó trong dấu "...")
+        function parseCsvRow(row) {
+            const cells = [];
+            let inQuote = false;
+            let cell = '';
+            for (let i = 0; i < row.length; i++) {
+                const char = row[i];
+                if (char === '"') {
+                    if (inQuote && row[i + 1] === '"') { // Xử lý 2 dấu "" liên tiếp
+                        cell += '"';
+                        i++;
+                    } else {
+                        inQuote = !inQuote;
+                    }
+                } else if (char === ',' && !inQuote) {
+                    cells.push(cell.trim());
+                    cell = '';
+                } else {
+                    cell += char;
+                }
+            }
+            cells.push(cell.trim()); // Thêm ô cuối cùng
+            return cells;
+        }
+
+        // --- (CẬP NHẬT) HÀM CHÍNH ĐỂ TẢI TIN TỨC (Dùng fetch) ---
+        async function loadNews() {
+            const loadingIndicator = document.getElementById('loading');
+            
+            if (GOOGLE_SHEET_URL === 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSEFvWlDEBRmcM_jizxpumTufEjrdxZCN9rJyXvXfAG9zrkp4vrH7Uu8uYcvbpDO1abuep-GbhPbTzx/pub?gid=0&single=true&output=csv') {
+                loadingIndicator.innerHTML = '<p class="text-red-600 font-bold">LỖI: Bạn chưa dán link Google Sheet vào file `index.html`. Vui lòng đọc file `github-pages-huong-dan.md`.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(GOOGLE_SHEET_URL);
+                if (!response.ok) {
+                    throw new Error('Không thể tải dữ liệu từ Google Sheet. Kiểm tra lại đường dẫn URL.');
+                }
+                const csvText = await response.text();
+                
+                // Chuyển CSV thành mảng JSON
+                const rows = csvText.split('\n').slice(1); // Bỏ hàng tiêu đề
+                
+                ALL_NEWS = rows.map(row => {
+                    if (row.trim() === '') return null; // Bỏ qua hàng trống
+                    const cols = parseCsvRow(row.trim());
+                    
+                    // Đảm bảo đúng thứ tự cột như trong Google Sheet
+                    // Cột 0: TieuDe, 1: MoTa, 2: DuongDan, 3: TheLoai, 4: IsFeatured, 5: IsHot
+                    if (cols.length < 6) return null; // Bỏ qua hàng lỗi
+                    
+                    return {
+                        title: cols[0],
+                        description: cols[1],
+                        link: cols[2],
+                        category: cols[3],
+                        isFeatured: (cols[4] || '').toUpperCase() === 'YES', // Dùng 'YES' để kích hoạt
+                        isHot: (cols[5] || '').toUpperCase() === 'YES'
+                    };
+                }).filter(Boolean).reverse(); // .filter(Boolean) để loại bỏ hàng null, .reverse() để tin mới nhất (ở cuối Sheet) lên đầu
+
+                // (MỚI) Lấy danh sách danh mục duy nhất
+                const categories = [...new Set(ALL_NEWS.map(post => post.category).filter(Boolean))];
+                
+                // (MỚI) Render danh mục ra sidebar
+                renderCategories(categories);
+                
+                // (MỚI) Hiển thị tất cả tin tức lần đầu
+                displayNews(ALL_NEWS);
+
+                loadingIndicator.remove();
+
+            } catch (error) {
+                console.error('Lỗi khi tải tin:', error);
+                loadingIndicator.innerHTML = `<p class="text-red-600 font-bold">LỖI: ${error.message}. Vui lòng kiểm tra lại link Google Sheet và đảm bảo bạn đã "Xuất bản lên web" ở dạng CSV.</p>`;
+            }
+        }
+
+        // Chạy hàm khi trang được tải
+        document.addEventListener('DOMContentLoaded', loadNews);
+    </script>
+
+</body>
+</html>
