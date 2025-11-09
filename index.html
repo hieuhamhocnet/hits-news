@@ -4,16 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HITs News - Trang tổng Hợp thông tin</title>
-    
     <meta name="description" content="Trang tổng hợp tin tức nóng hổi, cập nhật giá vàng, kết quả xổ số, lịch bóng đá và các tin tức tiện ích nhanh nhất.">
     <meta name="keywords" content="tin tức, tin nóng, giá vàng, xổ số, bóng đá, thời tiết, tin tức tổng hợp">
-    
-    <!-- (GIỮ NGUYÊN) Giữ nguyên file CSS của bạn -->
     <link rel="stylesheet" href="./css/style.css">
-    
+    <!-- (SỬA LỖI) Xóa bỏ định dạng Markdown khỏi link -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- (MỚI) DÁN MÃ GOOGLE ANALYTICS CỦA BẠN VÀO ĐÂY -->
     <!-- 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
@@ -27,36 +22,40 @@
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
     <div class="container mx-auto max-w-6xl p-4 md:p-8 flex-grow">
-        <!-- Header (GIỮ NGUYÊN) -->
-        <header class="mb-10 flex flex-col items-center">
-            <img src="./images/logo.png" alt="Logo Trang Tin Tức" class="mb-4 rounded-lg">
-            <h1 class="text-5xl font-extrabold text-gray-900">HITs News</h1>
-            <p class="text-xl text-gray-500 mt-2">Cập nhật tin tức nhanh nhất từ trang của tôi</p>
+
+        <!-- (NÂNG CẤP 5) Bỏ logo, H1 đổi , Slogan bên cạnh -->
+        <header class="mb-10 flex flex-row items-end gap-3">
+            <!-- Logo đã bị xóa -->
+            <h1 class="text-4xl font-extrabold">
+                <span class="text-teal-600">HITs</span><span class="text-orange-500"> News</span>
+            </h1>
+            <p class="text-lg text-gray-600 pb-1">- Trang tổng hợp thông tin tốt nhất</p>
         </header>
 
-        <!-- (NÂNG CẤP) Vùng Tin Nổi Bật (Featured) -->
+        <!-- (GIỮ NGUYÊN) Vùng Tin Nổi Bật (Featured) -->
         <section id="featured-post-container" class="mb-10"></section>
         
-        <!-- (NÂNG CẤP MỚI) Vùng Tin Ghim (Pinned) -->
+        <!-- (GIỮ NGUYÊN) Vùng Tin Ghim (Pinned) -->
         <section class="mb-10">
             <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-yellow-500 mb-4">Tin Quan Trọng</h2>
             <div id="pinned-news-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Tin ghim (Xem nhiều nhất, Nổi bật nhất) sẽ được chèn vào đây -->
+                <!-- Tin ghim sẽ được chèn vào đây -->
             </div>
         </section>
 
-        <!-- Layout chính (Grid) (GIỮ NGUYÊN) -->
+        <!-- (GIỮ NGUYÊN) Layout chính (Grid) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
             <!-- Cột trái: Tin tức mới nhất -->
             <main class="md:col-span-2 space-y-6">
                 <h2 id="news-list-title" class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 pb-2 mb-4 border-b-2 border-indigo-200">Tin Mới Nhất</h2>
                 
-                <div id="regular-news-container" class="space-y-6">
-                    <!-- Tin tức thường sẽ được chèn vào đây -->
+                <!-- (NÂNG CẤP 2) UI mới dạng Lưới (Grid) 2 cột cho tin tức -->
+                <div id="regular-news-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Tin tức thường (với ảnh) sẽ được chèn vào đây -->
                 </div>
 
-                <!-- (NÂNG CẤP MỚI) Khu vực Phân Trang -->
+                <!-- (GIỮ NGUYÊN) Khu vực Phân Trang -->
                 <div id="pagination-controls" class="flex justify-center items-center space-x-2 pt-6">
                     <!-- Các nút bấm phân trang sẽ được chèn vào đây -->
                 </div>
@@ -105,75 +104,150 @@
     <!-- (NÂNG CẤP) TOÀN BỘ PHẦN JAVASCRIPT ĐÃ ĐƯỢC CẬP NHẬT -->
     <script>
         // === PHẦN CÀI ĐẶT ===
+        // (SỬA LỖI) Xóa bỏ định dạng Markdown [..](..) khỏi URL
         const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSEFvWlDEBRmcM_jizxpumTufEjrdxZCN9rJyXvXfAG9zrkp4vrH7Uu8uYcvbpDO1abuep-GbhPbTzx/pub?gid=0&single=true&output=csv';
         
-        // (NÂNG CẤP MỚI) Tên danh mục bạn muốn "ghim"
         const PINNED_CATEGORIES = ["Xem nhiều nhất", "Nổi bật nhất"];
-        
-        // (NÂNG CẤP MỚI) Cài đặt phân trang
-        const POSTS_PER_PAGE = 40; // Số tin mỗi trang
+        const POSTS_PER_PAGE = 40;
         let CURRENT_PAGE = 1;
 
         // === BIẾN TOÀN CỤC ===
-        let ALL_NEWS = []; // Tất cả tin từ Google Sheet
-        let PINNED_NEWS = []; // Tin ghim (Xem nhiều, Nổi bật)
-        let REGULAR_NEWS = []; // Tin thường (đã lọc bỏ tin ghim, tin featured)
-        let CURRENTLY_DISPLAYED_NEWS = []; // Tin đang hiển thị (dùng cho filter)
+        let ALL_NEWS = []; 
+        let PINNED_NEWS = []; 
+        let REGULAR_NEWS = []; 
+        let CURRENTLY_DISPLAYED_NEWS = []; 
 
         // === DOM ELEMENTS ===
         const featuredContainer = document.getElementById('featured-post-container');
-        const pinnedContainer = document.getElementById('pinned-news-container'); // (MỚI)
+        const pinnedContainer = document.getElementById('pinned-news-container'); 
         const regularContainer = document.getElementById('regular-news-container');
         const hotListContainer = document.getElementById('hot-topics-list');
         const categoryListContainer = document.getElementById('category-list');
-        const newsListTitle = document.getElementById('news-list-title');
-        const paginationControls = document.getElementById('pagination-controls'); // (MỚI)
+        const newsListTitle = document.getElementById('news-list-title'); // (NÂNG CẤP 3) Dùng để cuộn tới
+        const paginationControls = document.getElementById('pagination-controls'); 
         const loadingIndicator = document.getElementById('loading');
 
         // === CÁC HÀM RENDER ===
 
-        // Render bài viết (Tin thường & Tin Nổi Bật)
+        // (NÂNG CẤP 1 & 2) Render bài viết (Tin thường & Tin Nổi Bật) với layout dạng Card có ảnh
         function renderPost(post, container, type = 'regular') {
             const article = document.createElement('article');
-            article.className = 'relative bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl';
-            const padding = (type === 'featured') ? 'p-8' : 'p-6';
-            const titleSize = (type === 'featured') ? 'text-4xl' : 'text-2xl';
-            const descSize = (type === "featured") ? 'text-lg' : 'text-base';
-            const tagHtml = post.category ? `
-                <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg shadow-sm z-10">
-                    ${post.category}
-                </div>
-            ` : '';
-            article.innerHTML = `
-                ${tagHtml}
-                <div class="${padding} relative">
-                    <h2 class="${titleSize} font-bold text-gray-800 hover:text-blue-600 mb-3">
-                        <a href="${post.link}" target="_blank" rel="noopener noreferrer">${post.title}</a>
-                    </h2>
-                    <p class="text-gray-600 mb-4 ${descSize}">${post.description || 'Nhấn để xem chi tiết...'}</p>
-                    <div class="flex justify-between items-center mt-4">
-                        <span class="text-sm text-gray-500">${(type === 'featured') ? 'BÀI VIẾT NỔI BẬT' : ''}</span>
-                        <a href="${post.link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-semibold">
-                            Đọc thêm &rarr;
-                        </a>
+            // Giao diện thẻ (card) mới
+            article.className = 'relative bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col';
+            
+            // Xử lý ảnh (NÂNG CẤP 1)
+            let imageHtml = '';
+            if (post.imageUrl && post.imageUrl !== 'N/A') {
+                imageHtml = `
+                    <div class="news-card-image-wrapper">
+                        <img src="${post.imageUrl}" alt="${post.title}" class="news-card-image">
                     </div>
-                </div>
-            `;
+                `;
+            } else {
+                // (NÂNG CẤP) Dùng logo H1 làm ảnh fallback
+                imageHtml = `
+                    <div class="news-card-image-wrapper news-card-image-fallback">
+                        <h1 class="text-2xl font-extrabold opacity-50">
+                            <span class="text-teal-600">HITs</span><span class="text-orange-500"> News</span>
+                        </h1>
+                    </div>
+                `;
+            }
+            
+            // Xử lý kích thước/padding cho Tin Nổi Bật
+            const isFeatured = type === 'featured';
+            const padding = isFeatured ? 'p-8' : 'p-6';
+            const titleSize = isFeatured ? 'text-4xl' : 'text-2xl'; // Tin Nổi Bật sẽ to hơn
+            const descSize = isFeatured ? 'text-lg' : 'text-base';
+            
+            // Nếu là Tin Nổi Bật, layout là ảnh bên TRÁI, chữ bên PHẢI
+            if (isFeatured) {
+                article.classList.add('md:flex-row'); // Thêm layout flex ngang trên Desktop
+                
+                // (NÂNG CẤP 1) Thêm cột G (HinhAnh)
+                const tagHtml = post.category ? `
+                    <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg shadow-sm z-10">
+                        ${post.category}
+                    </div>
+                ` : '';
+
+                article.innerHTML = `
+                    <div class="md:w-1/2 w-full">${imageHtml}</div>
+                    <div class="${padding} relative md:w-1/2 w-full">
+                        ${tagHtml}
+                        <h2 class="${titleSize} font-bold text-gray-800 hover:text-blue-600 mb-3">
+                            <a href="${post.link}" target="_blank" rel="noopener noreferrer">${post.title}</a>
+                        </h2>
+                        <p class="text-gray-600 mb-4 ${descSize}">${post.description || 'Nhấn để xem chi tiết...'}</p>
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="text-sm text-gray-500">BÀI VIẾT NỔI BẬT</span>
+                            <a href="${post.link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-semibold">
+                                Đọc thêm &rarr;
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } 
+            // Nếu là Tin Thường, layout là ảnh ở TRÊN, chữ ở DƯỚI (NÂNG CẤP 2 - UI Lưới)
+            else {
+                article.classList.add('flex-col'); // Giao diện thẻ dọc
+                const tagHtml = post.category ? `
+                    <div class="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg shadow-sm z-10">
+                        ${post.category}
+                    </div>
+                ` : '';
+
+                article.innerHTML = `
+                    ${imageHtml}
+                    <div class="${padding} relative flex flex-col flex-grow">
+                        ${tagHtml}
+                        <h2 class="text-xl font-bold text-gray-800 hover:text-blue-600 mb-3">
+                            <a href="${post.link}" target="_blank" rel="noopener noreferrer">${post.title}</a>
+                        </h2>
+                        <p class="text-gray-600 mb-4 text-sm flex-grow">${post.description || 'Nhấn để xem chi tiết...'}</p>
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="text-sm text-gray-500"></span> <!-- Placeholder -->
+                            <a href="${post.link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-semibold text-sm">
+                                Đọc thêm &rarr;
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
             container.appendChild(article);
         }
 
-        // (NÂNG CẤP MỚI) Render bài viết Ghim (Pinned)
+        // Render bài viết Ghim (Pinned)
         function renderPinnedPost(post, container) {
             const article = document.createElement('article');
-            // Thêm class 'pinned-post-card' để CSS tùy chỉnh màu nền
             article.className = 'pinned-post-card relative bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl';
             const tagHtml = post.category ? `
                 <div class="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg shadow-sm z-10">
                     ${post.category}
                 </div>
             ` : '';
+            // (NÂNG CẤP 1) Thêm ảnh vào tin ghim (nếu có)
+            let imageHtml = '';
+            if (post.imageUrl && post.imageUrl !== 'N/A') {
+                imageHtml = `
+                    <div class="news-card-image-wrapper-sm"> <!-- Dùng style ảnh nhỏ hơn -->
+                        <img src="${post.imageUrl}" alt="${post.title}" class="news-card-image">
+                    </div>
+                `;
+            } else {
+                // (NÂNG CẤP) Dùng logo H1 làm ảnh fallback cho tin ghim
+                imageHtml = `
+                    <div class="news-card-image-wrapper-sm news-card-image-fallback ml-2">
+                        <h1 class="text-xl font-extrabold opacity-50">
+                            <span class="text-teal-600">HITs</span><span class="text-orange-500"> News</span>
+                        </h1>
+                    </div>
+                `;
+            }
+            
             article.innerHTML = `
                 ${tagHtml}
+                ${imageHtml} <!-- Ảnh sẽ ở trên cùng -->
                 <div class="p-6 relative">
                     <h2 class="text-xl font-bold text-gray-800 hover:text-blue-600 mb-3">
                         <a href="${post.link}" target="_blank" rel="noopener noreferrer">${post.title}</a>
@@ -201,13 +275,13 @@
 
         // === CÁC HÀM LỌC VÀ HIỂN THỊ ===
 
-        // (NÂNG CẤP MỚI) Hiển thị Tin Thường + Phân Trang
+        // Hiển thị Tin Thường + Phân Trang
         function displayRegularNewsPage(newsList, page) {
             regularContainer.innerHTML = '';
             CURRENT_PAGE = page;
 
             if (!newsList || newsList.length === 0) {
-                 regularContainer.innerHTML = '<p class="text-gray-500 italic">Không tìm thấy tin tức nào.</p>';
+                 regularContainer.innerHTML = '<p class="text-gray-500 italic md:col-span-2">Không tìm thấy tin tức nào.</p>'; // Thêm md:col-span-2
                  return;
             }
 
@@ -220,12 +294,12 @@
             });
         }
 
-        // (NÂNG CẤP MỚI) Tạo các nút bấm phân trang
+        // Tạo các nút bấm phân trang
         function setupPagination(newsList) {
             paginationControls.innerHTML = '';
             const pageCount = Math.ceil(newsList.length / POSTS_PER_PAGE);
 
-            if (pageCount <= 1) return; // Không cần phân trang nếu chỉ có 1 trang
+            if (pageCount <= 1) return; 
 
             // Nút "Trang trước"
             const prevButton = document.createElement('button');
@@ -235,7 +309,9 @@
             prevButton.addEventListener('click', () => {
                 if (CURRENT_PAGE > 1) {
                     displayRegularNewsPage(newsList, CURRENT_PAGE - 1);
-                    setupPagination(newsList); // Vẽ lại nút
+                    setupPagination(newsList); 
+                    // (NÂNG CẤP 3) Tự động cuộn lên
+                    newsListTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
             paginationControls.appendChild(prevButton);
@@ -250,7 +326,9 @@
                 }
                 button.addEventListener('click', () => {
                     displayRegularNewsPage(newsList, i);
-                    setupPagination(newsList); // Vẽ lại nút
+                    setupPagination(newsList); 
+                    // (NÂNG CẤP 3) Tự động cuộn lên
+                    newsListTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
                 paginationControls.appendChild(button);
             }
@@ -263,7 +341,9 @@
             nextButton.addEventListener('click', () => {
                 if (CURRENT_PAGE < pageCount) {
                     displayRegularNewsPage(newsList, CURRENT_PAGE + 1);
-                    setupPagination(newsList); // Vẽ lại nút
+                    setupPagination(newsList); 
+                    // (NÂNG CẤP 3) Tự động cuộn lên
+                    newsListTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
             paginationControls.appendChild(nextButton);
@@ -278,18 +358,13 @@
             let featuredPostRendered = false;
 
             allNews.forEach(postData => {
-                // 1. Render Tin Nổi Bật (Featured)
                 if (postData.isFeatured && !featuredPostRendered) {
                     renderPost(postData, featuredContainer, 'featured');
                     featuredPostRendered = true;
                 }
-
-                // 2. Render Tin Hot (Sidebar)
                 if (postData.isHot) {
                     renderHotTopic(postData, hotListContainer);
                 }
-
-                // 3. Render Tin Ghim (Pinned)
                 if (PINNED_CATEGORIES.includes(postData.category)) {
                     renderPinnedPost(postData, pinnedContainer);
                 }
@@ -299,7 +374,7 @@
                 hotListContainer.innerHTML = '<li class="text-gray-500 italic">Không có chủ đề hot nào.</li>';
             }
             if (pinnedContainer.children.length === 0) {
-                pinnedContainer.closest('section').remove(); // Xóa cả khu vực Tin Ghim nếu không có tin
+                pinnedContainer.closest('section').remove(); 
             }
         }
         
@@ -322,41 +397,34 @@
                 categoryListContainer.appendChild(li);
             });
             
-            // Gắn sự kiện click cho nút danh mục
             document.querySelectorAll('.category-link').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const selectedCategory = e.target.dataset.category;
-                    
-                    // Cập nhật style active
                     document.querySelectorAll('.category-link').forEach(l => l.classList.remove('active'));
                     e.target.classList.add('active');
-                    
-                    // Lọc tin
                     filterNews(selectedCategory);
+                    
+                    // (NÂNG CẤP 3) Tự động cuộn lên
+                    newsListTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
             });
         }
         
-        // (NÂNG CẤP MỚI) Hàm lọc tin (Tương tác với phân trang)
+        // Hàm lọc tin
         function filterNews(category) {
             let filteredNews = [];
             
             if (category === 'all') {
-                filteredNews = REGULAR_NEWS; // Chỉ hiển thị tin thường
+                filteredNews = REGULAR_NEWS; 
                 newsListTitle.innerHTML = `<h2 id="news-list-title" class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 pb-2 mb-4 border-b-2 border-indigo-200">Tin Mới Nhất</h2>`;
             } else {
-                // Lọc từ danh sách tin thường
                 filteredNews = REGULAR_NEWS.filter(post => post.category === category);
                 newsListTitle.innerHTML = `<h2 id="news-list-title" class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 pb-2 mb-4 border-b-2 border-indigo-200">Tin tức: ${category}</h2>`;
             }
             
-            CURRENTLY_DISPLAYED_NEWS = filteredNews; // Lưu lại danh sách đang hiển thị
-            
-            // Hiển thị trang 1 của danh sách đã lọc
+            CURRENTLY_DISPLAYED_NEWS = filteredNews; 
             displayRegularNewsPage(CURRENTLY_DISPLAYED_NEWS, 1);
-            
-            // Tạo lại phân trang cho danh sách đã lọc
             setupPagination(CURRENTLY_DISPLAYED_NEWS);
         }
 
@@ -393,6 +461,7 @@
             }
 
             try {
+                // (SỬA LỖI) Đã sửa GOOGLE_SHEET_URL ở đầu script
                 const response = await fetch(GOOGLE_SHEET_URL);
                 if (!response.ok) throw new Error('Không thể tải dữ liệu từ Google Sheet.');
                 const csvText = await response.text();
@@ -402,44 +471,35 @@
                 ALL_NEWS = rows.map(row => {
                     if (row.trim() === '') return null;
                     const cols = parseCsvRow(row.trim());
-                    if (cols.length < 6) return null;
+                    // (NÂNG CẤP 1) Kiểm tra 7 cột (thay vì 6)
+                    if (cols.length < 7) return null; 
                     return {
                         title: cols[0],
                         description: cols[1],
                         link: cols[2],
                         category: cols[3],
                         isFeatured: (cols[4] || '').toUpperCase() === 'YES',
-                        isHot: (cols[5] || '').toUpperCase() === 'YES'
+                        isHot: (cols[5] || '').toUpperCase() === 'YES',
+                        imageUrl: cols[6] // (NÂNG CẤP 1) Đọc cột G
                     };
                 }).filter(Boolean).reverse();
 
-                // (NÂNG CẤP MỚI) Tách tin tức
-                PINNED_NEWS = []; // Tin ghim sẽ được xử lý trong displayStaticSections
+                PINNED_NEWS = []; 
                 REGULAR_NEWS = [];
                 
                 ALL_NEWS.forEach(post => {
-                    // Tin thường là tin KHÔNG Phải Featured VÀ KHÔNG Phải Pinned
                     if (!post.isFeatured && !PINNED_CATEGORIES.includes(post.category)) {
                         REGULAR_NEWS.push(post);
                     }
                 });
                 
-                // (NÂNG CẤP MỚI) Lấy danh sách danh mục (CHỈ từ tin thường)
                 const categories = [...new Set(REGULAR_NEWS.map(post => post.category).filter(Boolean))];
                 
                 // === Render trang ===
-                
-                // 1. Render các mục tĩnh (Featured, Pinned, Hot)
-                displayStaticSections(ALL_NEWS); // Dùng ALL_NEWS để lấy đủ tin
-
-                // 2. Render danh mục
+                displayStaticSections(ALL_NEWS); 
                 renderCategories(categories);
-                
-                // 3. Render Tin Thường (Trang 1)
                 CURRENTLY_DISPLAYED_NEWS = REGULAR_NEWS;
                 displayRegularNewsPage(CURRENTLY_DISPLAYED_NEWS, 1);
-                
-                // 4. Tạo Phân trang
                 setupPagination(CURRENTLY_DISPLAYED_NEWS);
 
                 loadingIndicator.remove();
